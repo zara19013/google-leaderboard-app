@@ -634,7 +634,8 @@ export default function App() {
               {/* Text */}
               <div>
                 <div className="title-eyebrow">Google Ads · Spend Attribution</div>
-                <h1 style={{ margin: 0 }}>
+                <h1 style={{ margin: 0, lineHeight: 1.05 }}>
+                  <div className="title-sub-word">Google</div>
                   <span className="title-main">LEADERBOARD</span>
                 </h1>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>

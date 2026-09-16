@@ -59,7 +59,20 @@ body {
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: rgba(255,255,255,0.28);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
+}
+
+.title-sub-word {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  background: linear-gradient(100deg, #4285F4 0%, #34A853 60%, #7fffa0 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: titleShimmer 4s linear infinite;
+  line-height: 1.15;
 }
 
 .title-main {
