@@ -128,6 +128,16 @@ cu_ad_names AS (
   FROM \`${PROJECT_ID}.${DATASET}.clickup_ready\`
   GROUP BY ad_name
 ),
+-- ClickUp task links by brief ID
+clickup AS (
+  SELECT
+    cf_brief_id,
+    ANY_VALUE(task_name) AS task_name,
+    ANY_VALUE(task_url)  AS task_url
+  FROM \`${PROJECT_ID}.${DATASET}.clickup_tasks\`
+  WHERE cf_brief_id IS NOT NULL
+  GROUP BY cf_brief_id
+),
 ad_daily AS (
   SELECT
     g.ad_name,
@@ -193,20 +203,26 @@ attributed AS (
           WHEN REGEXP_CONTAINS(t.ad_name, r'(?i)POD27')        THEN 'Lucas'
         END
       )
-    END AS strategist
+    END AS strategist,
+    ct.task_url,
+    ct.task_name
   FROM ad_totals t
   JOIN hit_5k h5 ON h5.ad_name = t.ad_name
   LEFT JOIN hit_20k h20 ON h20.ad_name = t.ad_name
   LEFT JOIN cu_brief_ids cu_brief
     ON cu_brief.brief_id = REGEXP_EXTRACT(t.ad_name, r'((?:AOG|OO|RSOO|RSBSO|BSO|CIN)-\\d+)')
   LEFT JOIN cu_ad_names cu_ad ON cu_ad.ad_name = t.ad_name
+  LEFT JOIN clickup ct
+    ON ct.cf_brief_id = REGEXP_EXTRACT(t.ad_name, r'((?:AOG|OO|RSOO|RSBSO|BSO|CIN)-\\d+)')
 )
 SELECT
   ad_name,
   COALESCE(strategist, 'Unassigned') AS strategist,
   total_spend,
   date_hit_5k,
-  date_hit_20k
+  date_hit_20k,
+  task_url,
+  task_name
 FROM attributed
 WHERE
   date_hit_5k  >= FORMAT_DATE('%Y-%m-%d', DATE_SUB(CURRENT_DATE('America/New_York'), INTERVAL 3 DAY))
@@ -231,6 +247,8 @@ function buildResponse(rows) {
       total_spend:  row.total_spend,
       date_hit_5k:  row.date_hit_5k,
       date_hit_20k: row.date_hit_20k,
+      task_url:     row.task_url  || null,
+      task_name:    row.task_name || null,
     };
     if (row.date_hit_5k && row.date_hit_5k >= cutoffStr) {
       if (!hits_5k[strategist]) hits_5k[strategist] = [];

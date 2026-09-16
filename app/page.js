@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 const GOOGLE_COLORS = ['#4285F4', '#34A853', '#FBBC05', '#EA4335'];
 
@@ -35,6 +35,112 @@ const MONTH_LABELS = {
   '2026-05': 'May 2026',
   '2026-04': 'April 2026',
 };
+
+// ─── Custom Dark DatePicker ───────────────────────────────────────────────────
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function DatePicker({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  const parsed = value ? value.split('-').map(Number) : null;
+  const [viewYear,  setViewYear]  = useState(parsed?.[0] || new Date().getFullYear());
+  const [viewMonth, setViewMonth] = useState(parsed?.[1] || new Date().getMonth() + 1);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  const displayDate = value
+    ? new Date(value + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    : 'Select date';
+
+  const todayStr  = new Date().toISOString().split('T')[0];
+  const firstDay  = new Date(viewYear, viewMonth - 1, 1).getDay();
+  const daysInMo  = new Date(viewYear, viewMonth, 0).getDate();
+  const cells     = [...Array(firstDay).fill(null), ...Array.from({ length: daysInMo }, (_, i) => i + 1)];
+
+  function pick(d) {
+    const m  = String(viewMonth).padStart(2, '0');
+    const dd = String(d).padStart(2, '0');
+    onChange(`${viewYear}-${m}-${dd}`);
+    setOpen(false);
+  }
+  function prevMo() { if (viewMonth === 1) { setViewMonth(12); setViewYear(y => y - 1); } else setViewMonth(m => m - 1); }
+  function nextMo() { if (viewMonth === 12) { setViewMonth(1); setViewYear(y => y + 1); } else setViewMonth(m => m + 1); }
+
+  return (
+    <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
+      <button onClick={() => setOpen(o => !o)} style={{
+        background: open ? 'rgba(66,133,244,0.1)' : 'rgba(255,255,255,0.06)',
+        border: `1px solid ${open ? 'rgba(66,133,244,0.55)' : 'rgba(255,255,255,0.12)'}`,
+        borderRadius: 10, padding: '9px 14px', color: '#fff', fontSize: 13, fontWeight: 500,
+        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'inherit',
+        transition: 'all 0.15s', boxShadow: open ? '0 0 0 3px rgba(66,133,244,0.15)' : 'none',
+        whiteSpace: 'nowrap',
+      }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(66,133,244,0.9)" strokeWidth="2" strokeLinecap="round">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        {displayDate}
+        <svg width="10" height="6" viewBox="0 0 10 6" style={{ opacity: 0.35, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>
+          <path d="M1 1l4 4 4-4" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+        </svg>
+      </button>
+
+      {open && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 8px)', left: 0, zIndex: 200,
+          background: '#12121e', border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 16, padding: '16px', width: 268,
+          boxShadow: '0 24px 64px rgba(0,0,0,0.7), 0 0 0 1px rgba(66,133,244,0.08)',
+        }}>
+          {/* Month nav */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <button onClick={prevMo} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.09)', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', width: 28, height: 28, borderRadius: 7, fontSize: 15, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit' }}>‹</button>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{MONTH_NAMES[viewMonth - 1]} {viewYear}</span>
+            <button onClick={nextMo} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.09)', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', width: 28, height: 28, borderRadius: 7, fontSize: 15, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit' }}>›</button>
+          </div>
+          {/* Day headers */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2, marginBottom: 6 }}>
+            {['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => (
+              <div key={d} style={{ textAlign: 'center', fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.04em' }}>{d}</div>
+            ))}
+          </div>
+          {/* Days */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
+            {cells.map((d, i) => {
+              if (!d) return <div key={i} />;
+              const ds = `${viewYear}-${String(viewMonth).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+              const isSel   = ds === value;
+              const isToday = ds === todayStr;
+              return (
+                <button key={i} onClick={() => pick(d)} style={{
+                  background: isSel ? '#4285F4' : isToday ? 'rgba(66,133,244,0.18)' : 'transparent',
+                  border: isToday && !isSel ? '1px solid rgba(66,133,244,0.5)' : '1px solid transparent',
+                  borderRadius: 8, color: isSel ? '#fff' : isToday ? '#7baaf7' : 'rgba(255,255,255,0.7)',
+                  cursor: 'pointer', fontSize: 12, fontWeight: isSel ? 700 : 400,
+                  padding: '7px 0', textAlign: 'center', transition: 'all 0.1s', fontFamily: 'inherit',
+                  boxShadow: isSel ? '0 0 12px rgba(66,133,244,0.4)' : 'none',
+                }}
+                onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
+                onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = isToday ? 'rgba(66,133,244,0.18)' : 'transparent'; }}
+                >{d}</button>
+              );
+            })}
+          </div>
+          {/* Today shortcut */}
+          <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.07)', textAlign: 'center' }}>
+            <button onClick={() => { onChange(todayStr); setOpen(false); }} style={{ background: 'none', border: 'none', color: '#4285F4', fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: '3px 12px', borderRadius: 6, fontFamily: 'inherit' }}>Today</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ─── Shared Spinner ───────────────────────────────────────────────────────────
 function Spinner({ label }) {
@@ -242,14 +348,27 @@ function NewHitsTab() {
               <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.4)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{strategist}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {hits20k[strategist].map((hit, i) => (
-                  <div key={i} style={{ background: 'rgba(234,67,53,0.07)', border: '1px solid rgba(234,67,53,0.2)', borderRadius: 10, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                  <div key={i} style={{ background: 'rgba(234,67,53,0.07)', border: '1px solid rgba(234,67,53,0.2)', borderRadius: 10, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{hit.ad_name}</div>
                       <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>Hit $20K on {hit.date_hit_20k}</div>
                     </div>
-                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <div style={{ fontSize: 15, fontWeight: 800, color: '#EA4335' }}>{formatSpend(hit.total_spend)}</div>
-                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>total</div>
+                    <div style={{ textAlign: 'right', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
+                      {hit.task_url && (
+                        <a href={hit.task_url} target="_blank" rel="noreferrer" title={hit.task_name || 'Open in ClickUp'} style={{
+                          display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px',
+                          background: 'rgba(122,93,255,0.15)', border: '1px solid rgba(122,93,255,0.3)',
+                          borderRadius: 7, color: '#a78bfa', fontSize: 11, fontWeight: 600,
+                          textDecoration: 'none', transition: 'all 0.15s', whiteSpace: 'nowrap',
+                        }}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M3.27 10.41L6 13.14l4.62-6.02c.41-.54 1.18-.64 1.72-.23.54.41.64 1.18.23 1.72L7.13 15.9c-.22.29-.55.47-.91.49-.36.02-.71-.13-.95-.4L3 12.65c-.43-.5-.37-1.27.13-1.7.5-.43 1.27-.37 1.7.13l-.56-.67zM12 5l4.62 6.02L20 8.27l-4.62-6.02L12 5zm3.96 9.79L12 18.62l-3.96-3.83c-.47-.46-.48-1.22-.02-1.69.46-.47 1.22-.48 1.69-.02L12 15.17l2.29-2.09c.47-.46 1.23-.45 1.69.02.46.47.45 1.23-.02 1.69z"/></svg>
+                          ClickUp
+                        </a>
+                      )}
+                      <div>
+                        <div style={{ fontSize: 15, fontWeight: 800, color: '#EA4335' }}>{formatSpend(hit.total_spend)}</div>
+                        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>total</div>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -271,14 +390,27 @@ function NewHitsTab() {
               <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.4)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{strategist}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {hits5k[strategist].map((hit, i) => (
-                  <div key={i} style={{ background: 'rgba(251,188,5,0.05)', border: '1px solid rgba(251,188,5,0.18)', borderRadius: 10, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                  <div key={i} style={{ background: 'rgba(251,188,5,0.05)', border: '1px solid rgba(251,188,5,0.18)', borderRadius: 10, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{hit.ad_name}</div>
                       <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>Hit $5K on {hit.date_hit_5k}</div>
                     </div>
-                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <div style={{ fontSize: 15, fontWeight: 800, color: '#FBBC05' }}>{formatSpend(hit.total_spend)}</div>
-                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>total</div>
+                    <div style={{ textAlign: 'right', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
+                      {hit.task_url && (
+                        <a href={hit.task_url} target="_blank" rel="noreferrer" title={hit.task_name || 'Open in ClickUp'} style={{
+                          display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px',
+                          background: 'rgba(122,93,255,0.15)', border: '1px solid rgba(122,93,255,0.3)',
+                          borderRadius: 7, color: '#a78bfa', fontSize: 11, fontWeight: 600,
+                          textDecoration: 'none', transition: 'all 0.15s', whiteSpace: 'nowrap',
+                        }}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M3.27 10.41L6 13.14l4.62-6.02c.41-.54 1.18-.64 1.72-.23.54.41.64 1.18.23 1.72L7.13 15.9c-.22.29-.55.47-.91.49-.36.02-.71-.13-.95-.4L3 12.65c-.43-.5-.37-1.27.13-1.7.5-.43 1.27-.37 1.7.13l-.56-.67zM12 5l4.62 6.02L20 8.27l-4.62-6.02L12 5zm3.96 9.79L12 18.62l-3.96-3.83c-.47-.46-.48-1.22-.02-1.69.46-.47 1.22-.48 1.69-.02L12 15.17l2.29-2.09c.47-.46 1.23-.45 1.69.02.46.47.45 1.23-.02 1.69z"/></svg>
+                          ClickUp
+                        </a>
+                      )}
+                      <div>
+                        <div style={{ fontSize: 15, fontWeight: 800, color: '#FBBC05' }}>{formatSpend(hit.total_spend)}</div>
+                        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>total</div>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -298,22 +430,19 @@ function DailyTop5Tab() {
   const defaultDate = yesterday.toISOString().split('T')[0];
 
   const [date,    setDate]    = useState(defaultDate);
-  const [input,   setInput]   = useState(defaultDate);
   const [data,    setData]    = useState(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState(null);
 
-  const load = useCallback((d) => {
+  useEffect(() => {
     setLoading(true);
     setError(null);
-    fetch(`/api/daily-top5?date=${d}`, { cache: 'no-store' })
+    fetch(`/api/daily-top5?date=${date}`, { cache: 'no-store' })
       .then(r => r.json())
       .then(d => { if (d.error) throw new Error(d.error); setData(d); })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => { load(date); }, [date, load]);
+  }, [date]);
 
   const top5     = data?.top5 || [];
   const maxSpend = top5[0]?.day_spend || 1;
@@ -321,21 +450,9 @@ function DailyTop5Tab() {
   return (
     <div>
       {/* Date picker */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24, flexWrap: 'wrap' }}>
-        <input
-          type="date"
-          className="date-input"
-          value={input}
-          onChange={e => setInput(e.target.value)}
-        />
-        <button onClick={() => { setDate(input); }} style={{
-          padding: '8px 18px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-          background: '#4285F4', color: '#fff', border: 'none',
-          boxShadow: '0 0 16px rgba(66,133,244,0.4)',
-        }}>
-          Load
-        </button>
-        {data && (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24, flexWrap: 'wrap' }}>
+        <DatePicker value={date} onChange={setDate} />
+        {data && !loading && (
           <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>
             Total Google spend: <span style={{ color: '#4285F4', fontWeight: 700 }}>{formatSpend(data.total_spend || 0)}</span>
             {data.total_ads > 0 && <span> · {data.total_ads.toLocaleString()} ads</span>}
@@ -422,11 +539,11 @@ function RangeTab() {
     <div>
       {/* Date range picker */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24, flexWrap: 'wrap' }}>
-        <input type="date" className="date-input" value={startInput} onChange={e => setStartInput(e.target.value)} />
-        <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>to</span>
-        <input type="date" className="date-input" value={endInput} onChange={e => setEndInput(e.target.value)} />
+        <DatePicker value={startInput} onChange={setStartInput} />
+        <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 13 }}>→</span>
+        <DatePicker value={endInput} onChange={setEndInput} />
         <button onClick={run} style={{
-          padding: '8px 18px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+          padding: '9px 20px', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer',
           background: '#34A853', color: '#fff', border: 'none',
           boxShadow: '0 0 16px rgba(52,168,83,0.4)',
         }}>
