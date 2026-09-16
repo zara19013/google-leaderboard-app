@@ -101,9 +101,6 @@ WITH day_spend AS (
   WHERE event_date = '${date}'
   GROUP BY ad_name
 ),
-gmap AS (
-  SELECT ad_name, strategist FROM \`${PROJECT_ID}.reporting.google_ad_name_map\`
-),
 cu_brief_ids AS (
   SELECT
     REGEXP_EXTRACT(ad_name, r'((?:AOG|OO|RSOO|RSBSO|BSO|CIN)-\\d+)') AS brief_id,
@@ -125,17 +122,17 @@ attr AS (
     d.day_spend,
     CASE
       WHEN COALESCE(
-        gmap.strategist, cu_brief.strategist, cu_ad.strategist,
+        cu_brief.strategist, cu_ad.strategist,
         REGEXP_EXTRACT(d.ad_name, r'_cs[_ ]*([A-Z][a-zA-Z]+)'),
         REGEXP_EXTRACT(d.ad_name, r'(?i)(?:^|[_ +\\-])(Liran|Farwa|Damia|Isaac|Iason|Tristan|Roman|Julija|Jaouad|Kevin|Owen|Thomas|Lauris|Zayd|Sam|Cosmin|Fotis|Marco|Emilis|Johnny|Lucas|Lukas|Airidas|Neil|Kandy|Adrian|David|Jamil|Mia|Martin|Will|Nina|Oliver|Brian|Aisha|Ezra|Dex|Georgio|Bilal)(?:[_ +\\-]|$)')
       ) IN ('Liran','Farwa','Damia') THEN 'Liran / Farwa'
       WHEN COALESCE(
-        gmap.strategist, cu_brief.strategist, cu_ad.strategist,
+        cu_brief.strategist, cu_ad.strategist,
         REGEXP_EXTRACT(d.ad_name, r'_cs[_ ]*([A-Z][a-zA-Z]+)'),
         REGEXP_EXTRACT(d.ad_name, r'(?i)(?:^|[_ +\\-])(Liran|Farwa|Damia|Isaac|Iason|Tristan|Roman|Julija|Jaouad|Kevin|Owen|Thomas|Lauris|Zayd|Sam|Cosmin|Fotis|Marco|Emilis|Johnny|Lucas|Lukas|Airidas|Neil|Kandy|Adrian|David|Jamil|Mia|Martin|Will|Nina|Oliver|Brian|Aisha|Ezra|Dex|Georgio|Bilal)(?:[_ +\\-]|$)')
       ) = 'Lukas' THEN 'Lucas'
       ELSE COALESCE(
-        gmap.strategist, cu_brief.strategist, cu_ad.strategist,
+        cu_brief.strategist, cu_ad.strategist,
         REGEXP_EXTRACT(d.ad_name, r'_cs[_ ]*([A-Z][a-zA-Z]+)'),
         REGEXP_EXTRACT(d.ad_name, r'(?i)(?:^|[_ +\\-])(Liran|Farwa|Damia|Isaac|Iason|Tristan|Roman|Julija|Jaouad|Kevin|Owen|Thomas|Lauris|Zayd|Sam|Cosmin|Fotis|Marco|Emilis|Johnny|Lucas|Lukas|Airidas|Neil|Kandy|Adrian|David|Jamil|Mia|Martin|Will|Nina|Oliver|Brian|Aisha|Ezra|Dex|Georgio|Bilal)(?:[_ +\\-]|$)'),
         CASE
@@ -149,7 +146,6 @@ attr AS (
       )
     END AS strategist
   FROM day_spend d
-  LEFT JOIN gmap ON gmap.ad_name = d.ad_name
   LEFT JOIN cu_brief_ids cu_brief
     ON cu_brief.brief_id = REGEXP_EXTRACT(d.ad_name, r'((?:AOG|OO|RSOO|RSBSO|BSO|CIN)-\\d+)')
   LEFT JOIN cu_ad_names cu_ad ON cu_ad.ad_name = d.ad_name
