@@ -585,9 +585,138 @@ const TABS = [
   { id: 'range',       label: 'Range',       icon: '📅' },
 ];
 
+// ─── Auth gate ────────────────────────────────────────────────────────────────
+const ALLOWED = ['zara@incubatorlab.ai', 'farwa@incubatorlab.ai'];
+const STORAGE_KEY = 'gl_auth_email';
+
+function LoginGate({ onAuth }) {
+  const [email,  setEmail]  = useState('');
+  const [error,  setError]  = useState('');
+  const [shake,  setShake]  = useState(false);
+
+  function attempt() {
+    const trimmed = email.trim().toLowerCase();
+    if (ALLOWED.includes(trimmed)) {
+      localStorage.setItem(STORAGE_KEY, trimmed);
+      onAuth(trimmed);
+    } else {
+      setError('Email not recognised. Access restricted.');
+      setShake(true);
+      setTimeout(() => setShake(false), 600);
+    }
+  }
+
+  function onKey(e) { if (e.key === 'Enter') attempt(); }
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', system-ui, sans-serif", position: 'relative', overflow: 'hidden' }}>
+      {/* Ambient blobs */}
+      <div style={{ position: 'fixed', top: -200, left: -200, width: 600, height: 600, borderRadius: '50%', background: 'radial-gradient(circle, rgba(66,133,244,0.1) 0%, transparent 70%)', pointerEvents: 'none', animation: 'blob 12s ease infinite' }}/>
+      <div style={{ position: 'fixed', bottom: -150, right: -150, width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(52,168,83,0.07) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+
+      <div className="animate-fade-up" style={{
+        width: '100%', maxWidth: 420, margin: '0 24px',
+        background: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: 24, padding: '44px 40px',
+        boxShadow: '0 32px 80px rgba(0,0,0,0.6)',
+        animation: shake ? 'shake 0.5s ease' : undefined,
+      }}>
+        {/* Logo */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 36 }}>
+          <div style={{ position: 'relative', marginBottom: 20 }}>
+            <div style={{ position: 'absolute', inset: -3, borderRadius: 22, background: 'conic-gradient(from 0deg, #4285F4, #34A853, #FBBC05, #EA4335, #4285F4)', animation: 'ringRotate 4s linear infinite', opacity: 0.7 }}/>
+            <div style={{ position: 'absolute', inset: -1, borderRadius: 20, background: '#080810' }}/>
+            <div className="icon-wrap" style={{ position: 'relative', width: 62, height: 62, borderRadius: 18, fontSize: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(145deg, rgba(66,133,244,0.25), rgba(52,168,83,0.15))', border: '1px solid rgba(66,133,244,0.35)' }}>📊</div>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div className="title-eyebrow" style={{ textAlign: 'center', marginBottom: 6 }}>Google Ads · Spend Attribution</div>
+            <h1 style={{ margin: 0, lineHeight: 1.05 }}>
+              <div className="title-sub-word" style={{ textAlign: 'center' }}>Google</div>
+              <div className="title-main" style={{ fontSize: 34, textAlign: 'center' }}>LEADERBOARD</div>
+            </h1>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(66,133,244,0.4), rgba(52,168,83,0.3), transparent)', marginBottom: 32 }}/>
+
+        {/* Form */}
+        <div style={{ marginBottom: 8 }}>
+          <label style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', textTransform: 'uppercase', display: 'block', marginBottom: 10 }}>
+            Work Email
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={e => { setEmail(e.target.value); setError(''); }}
+            onKeyDown={onKey}
+            placeholder="you@incubatorlab.ai"
+            autoFocus
+            style={{
+              width: '100%', padding: '13px 16px',
+              background: 'rgba(255,255,255,0.05)',
+              border: `1px solid ${error ? 'rgba(234,67,53,0.5)' : 'rgba(255,255,255,0.1)'}`,
+              borderRadius: 12, color: '#fff', fontSize: 14, fontWeight: 500,
+              fontFamily: 'inherit', outline: 'none',
+              transition: 'all 0.2s',
+              boxShadow: error ? '0 0 0 3px rgba(234,67,53,0.1)' : 'none',
+            }}
+            onFocus={e => { e.target.style.borderColor = 'rgba(66,133,244,0.6)'; e.target.style.boxShadow = '0 0 0 3px rgba(66,133,244,0.12)'; }}
+            onBlur={e => { e.target.style.borderColor = error ? 'rgba(234,67,53,0.5)' : 'rgba(255,255,255,0.1)'; e.target.style.boxShadow = 'none'; }}
+          />
+          {error && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, fontSize: 12, color: '#f87171', fontWeight: 500 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              {error}
+            </div>
+          )}
+        </div>
+
+        <button onClick={attempt} style={{
+          width: '100%', marginTop: 20, padding: '14px',
+          borderRadius: 12, fontSize: 14, fontWeight: 800, cursor: 'pointer', border: 'none',
+          background: 'linear-gradient(135deg, #4285F4, #34A853)',
+          color: '#fff', letterSpacing: '0.02em',
+          boxShadow: '0 4px 24px rgba(66,133,244,0.4)',
+          transition: 'all 0.2s', fontFamily: 'inherit',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(66,133,244,0.5)'; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(66,133,244,0.4)'; }}
+        >
+          Access Leaderboard →
+        </button>
+
+        <div style={{ marginTop: 20, fontSize: 11, color: 'rgba(255,255,255,0.15)', textAlign: 'center' }}>
+          Restricted to Incubator Lab team members
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes shake {
+          0%,100% { transform: translateX(0); }
+          20%      { transform: translateX(-8px); }
+          40%      { transform: translateX(8px); }
+          60%      { transform: translateX(-5px); }
+          80%      { transform: translateX(5px); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 export default function App() {
+  const [authed, setAuthed] = useState(false);
   const [tab, setTab] = useState('leaderboard');
   const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' });
+
+  // Check localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved && ALLOWED.includes(saved)) setAuthed(true);
+  }, []);
+
+  if (!authed) return <LoginGate onAuth={() => setAuthed(true)} />;
 
   return (
     <div style={{ minHeight: '100vh', background: '#080810', color: '#fff', fontFamily: "'Inter', system-ui, sans-serif", position: 'relative', overflow: 'hidden' }}>
