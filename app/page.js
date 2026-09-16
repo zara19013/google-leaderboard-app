@@ -601,30 +601,59 @@ export default function App() {
       <div style={{ position: 'relative', zIndex: 1, maxWidth: 960, margin: '0 auto', padding: '32px 28px 80px' }}>
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <div style={{
-              width: 50, height: 50, borderRadius: 15, fontSize: 24,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'linear-gradient(135deg, rgba(66,133,244,0.3), rgba(52,168,83,0.2))',
-              border: '1px solid rgba(66,133,244,0.3)',
-              boxShadow: '0 0 30px rgba(66,133,244,0.2)',
-            }}>📊</div>
-            <div>
-              <h1 style={{ margin: 0, fontSize: 24, fontWeight: 900, letterSpacing: '-0.035em', lineHeight: 1.1 }}>
-                <span className="shimmer-google">Google Spend Leaderboard</span>
-              </h1>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 5 }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: G.green, boxShadow: `0 0 8px ${G.green}`, flexShrink: 0 }} className="pulse-dot"/>
-                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', fontWeight: 500 }}>
-                  Google Ads · attributed to strategists · {today}
-                </span>
+        <div style={{ marginBottom: 40 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
+
+            {/* Left: icon + title */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
+
+              {/* Animated icon */}
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                {/* Rotating gradient ring */}
+                <div style={{
+                  position: 'absolute', inset: -3, borderRadius: 22,
+                  background: 'conic-gradient(from 0deg, #4285F4, #34A853, #FBBC05, #EA4335, #4285F4)',
+                  animation: 'ringRotate 4s linear infinite',
+                  opacity: 0.7,
+                }}/>
+                {/* Inner mask */}
+                <div style={{
+                  position: 'absolute', inset: -1, borderRadius: 20,
+                  background: '#080810',
+                }}/>
+                {/* Icon box */}
+                <div className="icon-wrap" style={{
+                  position: 'relative',
+                  width: 62, height: 62, borderRadius: 18, fontSize: 28,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'linear-gradient(145deg, rgba(66,133,244,0.25) 0%, rgba(52,168,83,0.15) 100%)',
+                  border: '1px solid rgba(66,133,244,0.35)',
+                }}>📊</div>
+              </div>
+
+              {/* Text */}
+              <div>
+                <div className="title-eyebrow">Google Ads · Spend Attribution</div>
+                <h1 style={{ margin: 0 }}>
+                  <span className="title-main">LEADERBOARD</span>
+                </h1>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: G.green, boxShadow: `0 0 10px ${G.green}` }} className="pulse-dot"/>
+                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontWeight: 500, letterSpacing: '0.01em' }}>
+                    Strategist spend · {today}
+                  </span>
+                </div>
               </div>
             </div>
+
+            {/* Right: BQ badge */}
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, padding: '8px 14px', fontFamily: 'monospace', letterSpacing: '0.02em', alignSelf: 'flex-start', marginTop: 4 }}>
+              reporting.google_strategist_leaderboard
+            </div>
           </div>
-          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, padding: '7px 14px', fontFamily: 'monospace', letterSpacing: '0.02em' }}>
-            reporting.google_strategist_leaderboard
-          </div>
+
+          {/* Divider */}
+          <div style={{ marginTop: 28, height: 1, background: 'linear-gradient(90deg, rgba(66,133,244,0.4) 0%, rgba(52,168,83,0.3) 30%, rgba(251,188,5,0.2) 60%, transparent 100%)' }}/>
         </div>
 
         {/* Tab bar */}
