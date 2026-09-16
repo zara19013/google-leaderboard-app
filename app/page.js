@@ -324,13 +324,9 @@ function DailyTop5Tab() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24, flexWrap: 'wrap' }}>
         <input
           type="date"
+          className="date-input"
           value={input}
           onChange={e => setInput(e.target.value)}
-          style={{
-            background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
-            borderRadius: 8, padding: '8px 14px', color: '#fff', fontSize: 13,
-            outline: 'none', cursor: 'pointer',
-          }}
         />
         <button onClick={() => { setDate(input); }} style={{
           padding: '8px 18px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
@@ -426,11 +422,9 @@ function RangeTab() {
     <div>
       {/* Date range picker */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24, flexWrap: 'wrap' }}>
-        <input type="date" value={startInput} onChange={e => setStartInput(e.target.value)}
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '8px 14px', color: '#fff', fontSize: 13, outline: 'none' }} />
+        <input type="date" className="date-input" value={startInput} onChange={e => setStartInput(e.target.value)} />
         <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>to</span>
-        <input type="date" value={endInput} onChange={e => setEndInput(e.target.value)}
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '8px 14px', color: '#fff', fontSize: 13, outline: 'none' }} />
+        <input type="date" className="date-input" value={endInput} onChange={e => setEndInput(e.target.value)} />
         <button onClick={run} style={{
           padding: '8px 18px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
           background: '#34A853', color: '#fff', border: 'none',

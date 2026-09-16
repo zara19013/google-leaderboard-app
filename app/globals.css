@@ -80,3 +80,66 @@ body {
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+/* ── Date input styling ───────────────────────────────────────── */
+input[type="date"].date-input {
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  color-scheme: dark;
+}
+input[type="date"].date-input:hover {
+  border-color: rgba(66,133,244,0.4);
+  background: rgba(66,133,244,0.07);
+}
+input[type="date"].date-input:focus {
+  border-color: rgba(66,133,244,0.7);
+  background: rgba(66,133,244,0.09);
+  box-shadow: 0 0 0 3px rgba(66,133,244,0.15);
+}
+input[type="date"].date-input::-webkit-calendar-picker-indicator {
+  filter: invert(0.7) sepia(1) saturate(3) hue-rotate(190deg);
+  opacity: 0.7;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 2px;
+  transition: opacity 0.15s;
+}
+input[type="date"].date-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+input[type="date"].date-input::-webkit-datetime-edit {
+  color: #fff;
+}
+input[type="date"].date-input::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+}
+input[type="date"].date-input::-webkit-datetime-edit-text {
+  color: rgba(255,255,255,0.3);
+  padding: 0 2px;
+}
+input[type="date"].date-input::-webkit-datetime-edit-month-field,
+input[type="date"].date-input::-webkit-datetime-edit-day-field,
+input[type="date"].date-input::-webkit-datetime-edit-year-field {
+  color: #e8eaed;
+  background: transparent;
+  border-radius: 3px;
+  padding: 1px 2px;
+}
+input[type="date"].date-input::-webkit-datetime-edit-month-field:focus,
+input[type="date"].date-input::-webkit-datetime-edit-day-field:focus,
+input[type="date"].date-input::-webkit-datetime-edit-year-field:focus {
+  background: rgba(66,133,244,0.35);
+  color: #fff;
+  outline: none;
+}
