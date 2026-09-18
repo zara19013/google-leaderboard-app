@@ -1,6 +1,19 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 
+// ─── Mobile hook ──────────────────────────────────────────────────────────────
+function useMobile() {
+  const [mobile, setMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)');
+    setMobile(mq.matches);
+    const h = e => setMobile(e.matches);
+    mq.addEventListener('change', h);
+    return () => mq.removeEventListener('change', h);
+  }, []);
+  return mobile;
+}
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 const G = { blue: '#4285F4', green: '#34A853', yellow: '#FBBC05', red: '#EA4335' };
 const GOOGLE_COLORS = [G.blue, G.green, G.yellow, G.red];
@@ -195,38 +208,41 @@ function Avatar({ name, color, size = 38 }) {
 }
 
 function LeaderRow({ row, i, spendKey, maxSpend }) {
-  const color = gColor(i);
-  const spend = row[spendKey] || 0;
-  const pct   = maxSpend > 0 ? (spend / maxSpend) * 100 : 0;
+  const color    = gColor(i);
+  const spend    = row[spendKey] || 0;
+  const pct      = maxSpend > 0 ? (spend / maxSpend) * 100 : 0;
+  const isMobile = useMobile();
   return (
     <div className={`${rowClass(i)} animate-fade-up delay-${Math.min(i, 10)}`}
-      style={{ borderRadius: 16, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
-      <div style={{ width: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      style={{ borderRadius: 16, padding: isMobile ? '12px 14px' : '16px 20px', display: 'flex', alignItems: 'center', gap: isMobile ? 10 : 16 }}>
+      <div style={{ width: isMobile ? 26 : 34, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <RankBadge rank={i} />
       </div>
-      <Avatar name={row.strategist} color={color} />
+      <Avatar name={row.strategist} color={color} size={isMobile ? 32 : 38} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <div style={{ fontSize: isMobile ? 13 : 14, fontWeight: 700, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {row.strategist}
         </div>
         {row.ads_running > 0 && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>{row.ads_running} ads</div>}
         {row.ads_tested  > 0 && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>{row.ads_tested} ads</div>}
       </div>
-      <div style={{ flex: 2, minWidth: 80, maxWidth: 280 }}>
-        <div style={{ height: 7, background: 'rgba(255,255,255,0.06)', borderRadius: 4, overflow: 'hidden' }}>
-          <div style={{
-            height: '100%', borderRadius: 4,
-            width: `${pct}%`,
-            background: i < 3
-              ? `linear-gradient(90deg, ${color}cc, ${color})`
-              : color,
-            boxShadow: i === 0 ? `0 0 12px ${color}88` : 'none',
-            transition: 'width 0.8s cubic-bezier(.16,1,.3,1)',
-          }}/>
+      {!isMobile && (
+        <div style={{ flex: 2, minWidth: 80, maxWidth: 280 }}>
+          <div style={{ height: 7, background: 'rgba(255,255,255,0.06)', borderRadius: 4, overflow: 'hidden' }}>
+            <div style={{
+              height: '100%', borderRadius: 4,
+              width: `${pct}%`,
+              background: i < 3
+                ? `linear-gradient(90deg, ${color}cc, ${color})`
+                : color,
+              boxShadow: i === 0 ? `0 0 12px ${color}88` : 'none',
+              transition: 'width 0.8s cubic-bezier(.16,1,.3,1)',
+            }}/>
+          </div>
         </div>
-      </div>
-      <div style={{ textAlign: 'right', flexShrink: 0, minWidth: 82 }}>
-        <div style={{ fontSize: 17, fontWeight: 900, color, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em' }}>
+      )}
+      <div style={{ textAlign: 'right', flexShrink: 0, minWidth: isMobile ? 64 : 82 }}>
+        <div style={{ fontSize: isMobile ? 15 : 17, fontWeight: 900, color, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em' }}>
           {fmt(spend)}
         </div>
       </div>
@@ -600,6 +616,7 @@ function LoginGate({ onAuth }) {
   const [email,  setEmail]  = useState('');
   const [error,  setError]  = useState('');
   const [shake,  setShake]  = useState(false);
+  const isMobile = useMobile();
 
   function attempt() {
     const trimmed = email.trim().toLowerCase();
@@ -622,10 +639,10 @@ function LoginGate({ onAuth }) {
       <div style={{ position: 'fixed', bottom: -150, right: -150, width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(52,168,83,0.07) 0%, transparent 70%)', pointerEvents: 'none' }}/>
 
       <div className="animate-fade-up" style={{
-        width: '100%', maxWidth: 420, margin: '0 24px',
+        width: '100%', maxWidth: 420, margin: isMobile ? '0 16px' : '0 24px',
         background: 'rgba(255,255,255,0.03)',
         border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: 24, padding: '44px 40px',
+        borderRadius: 24, padding: isMobile ? '32px 22px' : '44px 40px',
         boxShadow: '0 32px 80px rgba(0,0,0,0.6)',
         animation: shake ? 'shake 0.5s ease' : undefined,
       }}>
@@ -715,6 +732,7 @@ function LoginGate({ onAuth }) {
 export default function App() {
   const [authed, setAuthed] = useState(false);
   const [tab, setTab] = useState('leaderboard');
+  const isMobile = useMobile();
   const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' });
 
   // Check localStorage on mount
@@ -734,14 +752,14 @@ export default function App() {
       <div style={{ position: 'fixed', bottom: -200, right: -100, width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(234,67,53,0.05) 0%, transparent 70%)', pointerEvents: 'none' }}/>
 
       {/* Content */}
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: 960, margin: '0 auto', padding: '32px 28px 80px' }}>
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 960, margin: '0 auto', padding: isMobile ? '20px 14px 60px' : '32px 28px 80px' }}>
 
         {/* Header */}
         <div style={{ marginBottom: 40 }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
 
             {/* Left: icon + title */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 14 : 22 }}>
 
               {/* Animated icon */}
               <div style={{ position: 'relative', flexShrink: 0 }}>
@@ -783,10 +801,12 @@ export default function App() {
               </div>
             </div>
 
-            {/* Right: BQ badge */}
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, padding: '8px 14px', fontFamily: 'monospace', letterSpacing: '0.02em', alignSelf: 'flex-start', marginTop: 4 }}>
-              reporting.google_strategist_leaderboard
-            </div>
+            {/* Right: BQ badge — hidden on mobile */}
+            {!isMobile && (
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, padding: '8px 14px', fontFamily: 'monospace', letterSpacing: '0.02em', alignSelf: 'flex-start', marginTop: 4 }}>
+                reporting.google_strategist_leaderboard
+              </div>
+            )}
           </div>
 
           {/* Divider */}
@@ -794,11 +814,19 @@ export default function App() {
         </div>
 
         {/* Tab bar */}
-        <div style={{ display: 'flex', gap: 3, marginBottom: 32, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: 5, width: 'fit-content' }}>
+        <div style={{
+          display: 'flex', gap: 3, marginBottom: 32,
+          background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
+          borderRadius: 14, padding: 5,
+          width: isMobile ? '100%' : 'fit-content',
+          overflowX: isMobile ? 'auto' : 'visible',
+        }}>
           {TABS.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
-              padding: '9px 20px', borderRadius: 10, fontSize: 13, fontWeight: 700,
+              padding: isMobile ? '8px 13px' : '9px 20px',
+              borderRadius: 10, fontSize: isMobile ? 12 : 13, fontWeight: 700,
               cursor: 'pointer', border: 'none', transition: 'all 0.2s',
+              whiteSpace: 'nowrap',
               background: tab === t.id
                 ? 'linear-gradient(135deg, rgba(66,133,244,0.25), rgba(52,168,83,0.15))'
                 : 'transparent',
