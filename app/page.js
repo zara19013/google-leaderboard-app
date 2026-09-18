@@ -586,7 +586,13 @@ const TABS = [
 ];
 
 // ─── Auth gate ────────────────────────────────────────────────────────────────
-const ALLOWED = ['zara@incubatorlab.ai', 'farwa@incubatorlab.ai'];
+const ALLOWED = [
+  'zara@incubatorlab.ai',
+  'farwa@incubatorlab.ai',
+  'zaydpe@gmail.com',
+  'zaydzayd@resilia.shop',
+  'karenhardwick@incubatorlab.ai',
+];
 const STORAGE_KEY = 'gl_auth_email';
 
 function LoginGate({ onAuth }) {
