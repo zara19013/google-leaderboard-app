@@ -592,6 +592,7 @@ const ALLOWED = [
   'zaydpe@gmail.com',
   'zaydzayd@resilia.shop',
   'karenhardwick@incubatorlab.ai',
+  'liran@incubatorlab.ai',
 ];
 const STORAGE_KEY = 'gl_auth_email';
 
