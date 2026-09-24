@@ -609,6 +609,7 @@ const ALLOWED = [
   'zaydzayd@resilia.shop',
   'karenhardwick@incubatorlab.ai',
   'liran@incubatorlab.ai',
+  'johnathan@resilia.shop'
 ];
 const STORAGE_KEY = 'gl_auth_email';
 
