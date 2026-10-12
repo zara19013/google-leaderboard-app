@@ -266,10 +266,12 @@ function LeaderboardTab() {
       .finally(() => setLoading(false));
   }, [month]);
 
-  const rows     = data?.data || [];
-  const maxSpend = rows[0]?.month_spend || 1;
-  const months   = data?.available_months || [];
-  const s        = data?.summary || {};
+  const rows         = data?.data || [];
+  const maxSpend     = rows[0]?.month_spend || 1;
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const apiMonths    = data?.available_months || [];
+  const months       = apiMonths.includes(currentMonth) ? apiMonths : [currentMonth, ...apiMonths];
+  const s            = data?.summary || {};
 
   return (
     <>
