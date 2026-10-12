@@ -18,10 +18,10 @@ function useMobile() {
 const G = { blue: '#4285F4', green: '#34A853', yellow: '#FBBC05', red: '#EA4335' };
 const GOOGLE_COLORS = [G.blue, G.green, G.yellow, G.red];
 const MONTH_NAMES   = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-const MONTH_LABELS  = {
-  '2026-09': 'Sep 2026', '2026-08': 'Aug 2026', '2026-07': 'Jul 2026',
-  '2026-06': 'Jun 2026', '2026-05': 'May 2026', '2026-04': 'Apr 2026',
-};
+function formatMonth(m) {
+  const [year, mon] = m.split('-').map(Number);
+  return `${MONTH_NAMES[mon - 1].slice(0, 3)} ${year}`;
+}
 
 function gColor(i) { return GOOGLE_COLORS[i % 4]; }
 
@@ -252,7 +252,7 @@ function LeaderRow({ row, i, spendKey, maxSpend }) {
 
 // ─── Leaderboard Tab ──────────────────────────────────────────────────────────
 function LeaderboardTab() {
-  const [month,   setMonth]   = useState('2026-09');
+  const [month,   setMonth]   = useState(() => new Date().toISOString().slice(0, 7));
   const [data,    setData]    = useState(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState(null);
@@ -268,7 +268,7 @@ function LeaderboardTab() {
 
   const rows     = data?.data || [];
   const maxSpend = rows[0]?.month_spend || 1;
-  const months   = data?.available_months || Object.keys(MONTH_LABELS);
+  const months   = data?.available_months || [];
   const s        = data?.summary || {};
 
   return (
@@ -286,7 +286,7 @@ function LeaderboardTab() {
             boxShadow: month === m ? `0 4px 20px ${G.blue}44` : 'none',
             transform: month === m ? 'scale(1.04)' : 'scale(1)',
           }}>
-            {MONTH_LABELS[m] || m}
+            {formatMonth(m)}
           </button>
         ))}
       </div>
@@ -312,7 +312,7 @@ function LeaderboardTab() {
 
       {!loading && !error && rows.length === 0 && (
         <div style={{ textAlign: 'center', padding: '80px 0', color: 'rgba(255,255,255,0.25)', fontSize: 14 }}>
-          No data for {MONTH_LABELS[month] || month}
+          No data for {formatMonth(month)}
         </div>
       )}
 
