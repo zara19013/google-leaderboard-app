@@ -250,6 +250,65 @@ function LeaderRow({ row, i, spendKey, maxSpend }) {
   );
 }
 
+function SpecialRow({ row, spendKey, maxSpend }) {
+  const isResizing = row.strategist === 'Resizing';
+  const color      = isResizing ? '#FBBC05' : G.blue;
+  const label      = isResizing ? 'Resizing Pipeline' : 'Iteration Pipeline';
+  const abbr       = isResizing ? 'RS' : 'IT';
+  const spend      = row[spendKey] || 0;
+  const pct        = maxSpend > 0 ? (spend / maxSpend) * 100 : 0;
+  const isMobile   = useMobile();
+  return (
+    <div style={{
+      borderRadius: 16,
+      padding: isMobile ? '12px 14px' : '14px 20px',
+      display: 'flex', alignItems: 'center', gap: isMobile ? 10 : 16,
+      background: `${color}0d`,
+      border: `1px solid ${color}50`,
+      boxShadow: `0 0 24px ${color}12`,
+    }}>
+      {/* Abbr badge */}
+      <div style={{
+        width: isMobile ? 32 : 38, height: isMobile ? 32 : 38, borderRadius: 10, flexShrink: 0,
+        background: `${color}20`, border: `1.5px solid ${color}60`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 11, fontWeight: 900, color, letterSpacing: '0.04em',
+      }}>
+        {abbr}
+      </div>
+      {/* Label */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: isMobile ? 12 : 13, fontWeight: 800, color, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          {label}
+        </div>
+        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', marginTop: 2, fontWeight: 500 }}>
+          Not attributed to strategist
+        </div>
+      </div>
+      {/* Bar */}
+      {!isMobile && (
+        <div style={{ flex: 2, minWidth: 80, maxWidth: 280 }}>
+          <div style={{ height: 7, background: 'rgba(255,255,255,0.06)', borderRadius: 4, overflow: 'hidden' }}>
+            <div style={{
+              height: '100%', borderRadius: 4,
+              width: `${pct}%`,
+              background: `linear-gradient(90deg, ${color}88, ${color})`,
+              boxShadow: `0 0 10px ${color}55`,
+              transition: 'width 0.8s cubic-bezier(.16,1,.3,1)',
+            }}/>
+          </div>
+        </div>
+      )}
+      {/* Spend */}
+      <div style={{ textAlign: 'right', flexShrink: 0, minWidth: isMobile ? 64 : 82 }}>
+        <div style={{ fontSize: isMobile ? 15 : 17, fontWeight: 900, color, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em' }}>
+          {fmt(spend)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Leaderboard Tab ──────────────────────────────────────────────────────────
 function LeaderboardTab() {
   const [month,   setMonth]   = useState(() => new Date().toISOString().slice(0, 7));
@@ -267,7 +326,10 @@ function LeaderboardTab() {
   }, [month]);
 
   const rows         = data?.data || [];
-  const maxSpend     = rows[0]?.month_spend || 1;
+  const specialRows  = rows.filter(r => r.strategist === 'Resizing' || r.strategist === 'Iteration');
+  const regularRows  = rows.filter(r => r.strategist !== 'Resizing' && r.strategist !== 'Iteration');
+  const maxSpend     = Math.max(regularRows[0]?.month_spend || 1, 1);
+  const maxSpecial   = Math.max(...rows.map(r => r.month_spend || 0), 1);
   const currentMonth = new Date().toISOString().slice(0, 7);
   const apiMonths    = data?.available_months || [];
   const months       = apiMonths.includes(currentMonth) ? apiMonths : [currentMonth, ...apiMonths];
@@ -308,7 +370,18 @@ function LeaderboardTab() {
 
       {!loading && !error && rows.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-          {rows.map((row, i) => <LeaderRow key={row.strategist} row={row} i={i} spendKey="month_spend" maxSpend={maxSpend} />)}
+          {/* Resizing / Iteration pinned at top */}
+          {specialRows.map(row => (
+            <SpecialRow key={row.strategist} row={row} spendKey="month_spend" maxSpend={maxSpecial} />
+          ))}
+          {/* Separator if special rows exist */}
+          {specialRows.length > 0 && regularRows.length > 0 && (
+            <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '4px 0' }} />
+          )}
+          {/* Regular strategist rows */}
+          {regularRows.map((row, i) => (
+            <LeaderRow key={row.strategist} row={row} i={i} spendKey="month_spend" maxSpend={maxSpend} />
+          ))}
         </div>
       )}
 
@@ -611,7 +684,8 @@ const ALLOWED = [
   'zaydzayd@resilia.shop',
   'karenhardwick@incubatorlab.ai',
   'liran@incubatorlab.ai',
-  'johnathan@resilia.shop'
+  'johnathan@resilia.shop',
+  'amna.mir@resilia.shop',
 ];
 const STORAGE_KEY = 'gl_auth_email';
 
